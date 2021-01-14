@@ -106,7 +106,7 @@ def orbit():
 
 # At end of flight, reduces orbit to sub 50,000 for re-entry
 def reenter():
-    print("Dragon is beginning its entry burn to re-enter the Earth's atmosphere")
+    print("The capsule is beginning its entry burn to re-enter the Earth's atmosphere")
     control.sas_mode = control.sas_mode.retrograde
     time.sleep(5)
     while (orbit.periapsis_altitude > 50000):
@@ -118,14 +118,14 @@ def reenter():
 
 # During and after reentry, controls parachute and landing
 def land():
-    print("Dragon has burned sufficiently to re-enter the atmosphere and is now coasting")
+    print("The capsule has burned sufficiently to re-enter the atmosphere and is now coasting")
     while (flight.mean_altitude > 11000):
         time.sleep(0.5)
-    print("Dragon is deploying its drogue chutes to slow itself down to safe speeds")
+    print("The capsule is deploying its drogue chutes to slow itself down to safe speeds")
     control.activate_next_stage() # Drogue chute deploy
     while (flight.mean_altitude > 5000):
         time.sleep(0.5)
-    print("Dragon is now deploying its main chutes to prepare for landing")
+    print("The capsule is now deploying its main chutes to prepare for landing")
     control.activate_next_stage() # Main chute deploy
 
 prepareForLaunch() # Sets up for launch

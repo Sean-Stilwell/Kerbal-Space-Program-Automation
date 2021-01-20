@@ -39,22 +39,41 @@ def inputNumber(message):
        return userInput 
        break 
 
-launch.DESIRED_ORBIT_HEADING = inputNumber("What heading for launch? 0 = N, 90 = E, 180 = S, 270 = W relative to KSC\n > "
-launch.prepareForLaunch() # Sets up for launch
+launch.DESIRED_ORBIT_HEADING = inputNumber("What heading for launch? 0 = N, 90 = E, 180 = S, 270 = W relative to KSC\n > ")
+launch.prepare_for_launch() # Sets up for launch
+launch.countdown(5)
 launch.control.activate_next_stage() # Blast off
-launch.firstStage() # Ascent to space
-launch.control.activate_next_stage() # Starts second stage
-launch.control.rcs = True
-launch.coast() # Coasts to highest point
-launch.circularize() # Makes the orbit approximately a circle
-launch.orbit() # Adjusts the orbit of the ship to ensure it is a circle
 
-print("The capsule is now in a stable orbit.")
-s = ""
-while (s != "END" and s != "CONTINUE"):
-    s = input("To re-enter and land now, type END. \nTo remain in orbit under manual control or to run another script, type CONTINUE\n> ")
-
-if (s == "END"):
-    reenter()
-    launch.control.activate_next_stage()
+try:
+    launch.first_stage() # Ascent to space
+except Exception as e: # If an exception occurs at this point, the spacecraft must abort
+    launch.control.abort = True
+    print(e)
+    if (launch.flight.mean_altitude > 11000): 
+        time.sleep(25)
     land()
+else:
+    launch.control.activate_next_stage() # Starts second stage
+    launch.control.rcs = True
+    launch.coast() # Coasts to highest point
+    try:
+        launch.circularize() # Makes the orbit approximately a circle
+        launch.orbit() # Adjusts the orbit of the ship to ensure it is a circle
+    except: # If an exception occurs at this point, the rocket must reenter and then land.
+        reenter()
+        land()
+    else:
+        print("The capsule is now in a stable orbit.")
+        s = ""
+        while (s != "END" and s != "CONTINUE"):
+            s = input("\nTo re-enter and land now, type END. \nTo remain in orbit under manual control or to run another script, type CONTINUE\n> ")
+
+        if (s == "END"):
+            reenter()
+            launch.control.activate_next_stage()
+            land()
+
+while (not launch.vessel.recoverable):
+    time.sleep(2)
+
+launch.vessel.recover()

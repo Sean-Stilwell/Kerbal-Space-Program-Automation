@@ -27,14 +27,33 @@ def deploy():
     time.sleep(5)
     print("Mission complete.")
 
-launch.DESIRED_ORBIT_HEADING = 15 # High orbit to ensure maximum coverage
-launch.prepareForLaunch() # Sets up for launch
+launch.DESIRED_ORBIT_HEADING = 25 # High orbit to ensure maximum coverage
+launch.prepare_for_launch() # Sets up for launch
 launch.control.activate_next_stage() # Blast off
-launch.firstStage() # Ascent to space
-launch.control.activate_next_stage() # Starts second stage
-launch.control.rcs = True
-launch.coast() # Coasts to highest point
-launch.circularize() # Makes the orbit approximately a circle
-launch.orbit() # Adjusts the orbit of the ship to ensure it is a circle
-print("The capsule is now in a stable orbit.")
-deploy()
+try:
+    launch.first_stage() # Ascent to space
+except Exception as e:
+    print(e)
+    print("Vehicle will attempt to resume control.")
+    time.sleep(3)
+    try:
+        launch.first_stage()
+    except Exception as f:
+        print("Vehicle unable to regain control. Proceed manually if possible.")
+else:
+    launch.control.activate_next_stage() # Starts second stage
+    launch.control.rcs = True
+    launch.coast() # Coasts to highest point
+    try:
+        launch.circularize() # Makes the orbit approximately a circle
+    except:
+        print("Vehicle unable to circularize. Proceed manually and type GO to deploy.")
+        s = ""
+        while (s != "GO"):
+            s = input("\nTo re-enter and land now, type END. \nTo remain in orbit under manual control or to run another script, type CONTINUE\n> ")
+        deploy()
+    else:
+        launch.orbit() # Adjusts the orbit of the ship to ensure it is a circle
+        print("The capsule is now in a stable orbit.")
+        time.sleep(3)
+        deploy()
